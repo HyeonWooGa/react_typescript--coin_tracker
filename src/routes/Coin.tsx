@@ -1,6 +1,8 @@
 import styled from "styled-components";
-import { useParams, useLocation } from "react-router";
+import { Switch, Route, useParams, useLocation } from "react-router";
 import { useEffect, useState } from "react";
+import Price from "./Price";
+import Chart from "./Chart";
 
 const Container = styled.div`
   padding: 0px 20px;
@@ -20,6 +22,39 @@ const Title = styled.h1`
 
 const Loader = styled.span`
   display: block;
+`;
+
+const Overview = styled.div`
+  margin-top: 30px;
+  padding: 10px 20px;
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 10px;
+  display: flex;
+  justify-content: space-around;
+`;
+const OverviewItem = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  span:first-child {
+    font-size: 14px;
+    margin-bottom: 5px;
+  }
+`;
+
+const Divide = styled.div`
+  display: flex;
+  flex-direction: column;
+  span {
+    margin: -1.5px;
+    opacity: 0.2;
+  }
+`;
+
+const Description = styled.p`
+  margin: 20px 0px;
 `;
 
 interface RouteParams {
@@ -96,21 +131,75 @@ function Coin() {
       const infoData = await (
         await fetch(`https://api.coinpaprika.com/v1/coins/${coinId}`)
       ).json();
-      console.log(infoData);
       const priceData = await (
         await fetch(`https://api.coinpaprika.com/v1/tickers/${coinId}`)
       ).json();
-      console.log(priceData);
       setInfo(infoData);
       setPrice(priceData);
+      setLoading(false);
     })();
-  }, []);
+  }, [coinId]);
   return (
     <Container>
       <Header>
-        <Title>{state?.name || "Loading..."}</Title>
+        <Title>
+          {state?.name ? state.name : loading ? "Loading..." : info?.name}
+        </Title>
       </Header>
-      {loading ? <Loader>Loading...</Loader> : null}
+      {loading ? (
+        <Loader>Loading...</Loader>
+      ) : (
+        <>
+          <Overview>
+            <OverviewItem>
+              <span>RANK:</span>
+              <span>{info?.rank}</span>
+            </OverviewItem>
+            <Divide>
+              <span>|</span>
+              <span>|</span>
+              <span>|</span>
+            </Divide>
+            <OverviewItem>
+              <span>SYMBOL:</span>
+              <span>${info?.symbol}</span>
+            </OverviewItem>
+            <Divide>
+              <span>|</span>
+              <span>|</span>
+              <span>|</span>
+            </Divide>
+            <OverviewItem>
+              <span>OPEN SOURCE:</span>
+              <span>{info?.open_source ? "YES" : "NO"}</span>
+            </OverviewItem>
+          </Overview>
+          <Description>{info?.description}</Description>
+          <Overview>
+            <OverviewItem>
+              <span>TOTAL SUPPLY:</span>
+              <span>{price?.total_supply}</span>
+            </OverviewItem>
+            <Divide>
+              <span>|</span>
+              <span>|</span>
+              <span>|</span>
+            </Divide>
+            <OverviewItem>
+              <span>MAX SUPPLY:</span>
+              <span>{price?.max_supply}</span>
+            </OverviewItem>
+          </Overview>
+          <Switch>
+            <Route path={`/${coinId}/price`}>
+              <Price />
+            </Route>
+            <Route path={`/${coinId}/chart`}>
+              <Chart />
+            </Route>
+          </Switch>
+        </>
+      )}
     </Container>
   );
 }
@@ -118,3 +207,9 @@ function Coin() {
 export default Coin;
 
 // 브라우저 콘솔에서 temp1, temp2 로 각 API 넘겨준뒤 Object.keys(temp1).join(), Object.values(temp1).map(v => typeof v).join() 으로 정보 받아와서 인터페이스 작성해줌
+// Nested Router : Router 안에 있는 Router
+// 웹사이트에서 텝들을 사용할 때 사용, 이 페이지의 경우 탭 두가지 사용
+// 탭 1) 가격의 정보 탭 2) 차트 or 그래픽
+// State 에서 컨트롤 하는 게 아니라 URL 로 컨트롤 하고
+// 유저들이 각 탭에 다이렉트로 접속할 수 있게 해줌
+//
