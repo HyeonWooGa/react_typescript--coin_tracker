@@ -1,8 +1,15 @@
 import styled from "styled-components";
-import { Switch, Route, useParams, useLocation } from "react-router";
+import {
+  Switch,
+  Route,
+  useParams,
+  useLocation,
+  useRouteMatch,
+} from "react-router";
 import { useEffect, useState } from "react";
 import Price from "./Price";
 import Chart from "./Chart";
+import { Link } from "react-router-dom";
 
 const Container = styled.div`
   padding: 0px 20px;
@@ -55,6 +62,26 @@ const Divide = styled.div`
 
 const Description = styled.p`
   margin: 20px 0px;
+`;
+
+const Taps = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  margin: 25px 0px;
+  gap: 10px;
+`;
+
+const Tap = styled.span<{ isActive: boolean }>`
+  color: ${(props) =>
+    props.isActive ? props.theme.accentColor : props.theme.textColor};
+  text-align: center;
+  text-transform: uppercase;
+  background-color: rgba(0, 0, 0, 0.5);
+  padding: 7px 0px;
+  border-radius: 10px;
+  a {
+    display: block;
+  }
 `;
 
 interface RouteParams {
@@ -126,6 +153,8 @@ function Coin() {
   const { state } = useLocation<RouteState>();
   const [info, setInfo] = useState<InforData>();
   const [price, setPrice] = useState<PriceData>();
+  const priceMatch = useRouteMatch("/:coinId/price"); //hook
+  const chartMatch = useRouteMatch("/:coinId/chart");
   useEffect(() => {
     (async () => {
       const infoData = await (
@@ -190,11 +219,19 @@ function Coin() {
               <span>{price?.max_supply}</span>
             </OverviewItem>
           </Overview>
+          <Taps>
+            <Tap isActive={chartMatch !== null}>
+              <Link to={`/${coinId}/chart`}>Chart</Link>
+            </Tap>
+            <Tap isActive={priceMatch !== null}>
+              <Link to={`/${coinId}/price`}>Price</Link>
+            </Tap>
+          </Taps>
           <Switch>
-            <Route path={`/${coinId}/price`}>
+            <Route path={`/:coinId/price`}>
               <Price />
             </Route>
-            <Route path={`/${coinId}/chart`}>
+            <Route path={`/:coinId/chart`}>
               <Chart />
             </Route>
           </Switch>
@@ -212,4 +249,7 @@ export default Coin;
 // 탭 1) 가격의 정보 탭 2) 차트 or 그래픽
 // State 에서 컨트롤 하는 게 아니라 URL 로 컨트롤 하고
 // 유저들이 각 탭에 다이렉트로 접속할 수 있게 해줌
+// URL 변화 없이 react.js 의 State 만으로 구현할 수도 있었겠지만
+// 링크를 사용해서 URL 을 바꿈으로써 트리거가 되어서
+// re-render 를 할 수 있다는 게 정말 멋진 것 같아
 //
