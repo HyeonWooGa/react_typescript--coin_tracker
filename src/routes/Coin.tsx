@@ -10,6 +10,8 @@ import { useEffect, useState } from "react";
 import Price from "./Price";
 import Chart from "./Chart";
 import { Link } from "react-router-dom";
+import { useQuery } from "react-query";
+import { fetchCoinInfo, fetchCoinTickers } from "../api";
 
 const Container = styled.div`
   padding: 0px 20px;
@@ -92,7 +94,7 @@ interface RouteState {
   name: string;
 }
 
-interface InforData {
+interface InfoData {
   id: string;
   name: string;
   symbol: string;
@@ -148,13 +150,21 @@ interface PriceData {
 }
 
 function Coin() {
-  const [loading, setLoading] = useState(true);
   const { coinId } = useParams<RouteParams>(); // hook
   const { state } = useLocation<RouteState>();
-  const [info, setInfo] = useState<InforData>();
-  const [price, setPrice] = useState<PriceData>();
   const priceMatch = useRouteMatch("/:coinId/price"); //hook
   const chartMatch = useRouteMatch("/:coinId/chart");
+  const { isLoading: infoLoading, data: infoData } = useQuery<InfoData>(
+    ["info", coinId],
+    () => fetchCoinInfo(coinId)
+  );
+  const { isLoading: tickersLoading, data: tickersdata } = useQuery<PriceData>(
+    ["tickers", coinId],
+    () => fetchCoinTickers(coinId)
+  );
+  /* const [loading, setLoading] = useState(true);
+  const [info, setInfo] = useState<InforData>();
+  const [price, setPrice] = useState<PriceData>();
   useEffect(() => {
     (async () => {
       const infoData = await (
@@ -167,12 +177,13 @@ function Coin() {
       setPrice(priceData);
       setLoading(false);
     })();
-  }, [coinId]);
+  }, [coinId]); */
+  const loading = infoLoading || tickersLoading;
   return (
     <Container>
       <Header>
         <Title>
-          {state?.name ? state.name : loading ? "Loading..." : info?.name}
+          {state?.name ? state.name : loading ? "Loading..." : infoData?.name}
         </Title>
       </Header>
       {loading ? (
@@ -182,7 +193,7 @@ function Coin() {
           <Overview>
             <OverviewItem>
               <span>RANK:</span>
-              <span>{info?.rank}</span>
+              <span>{infoData?.rank}</span>
             </OverviewItem>
             <Divide>
               <span>|</span>
@@ -191,7 +202,7 @@ function Coin() {
             </Divide>
             <OverviewItem>
               <span>SYMBOL:</span>
-              <span>${info?.symbol}</span>
+              <span>${infoData?.symbol}</span>
             </OverviewItem>
             <Divide>
               <span>|</span>
@@ -200,14 +211,14 @@ function Coin() {
             </Divide>
             <OverviewItem>
               <span>OPEN SOURCE:</span>
-              <span>{info?.open_source ? "YES" : "NO"}</span>
+              <span>{infoData?.open_source ? "YES" : "NO"}</span>
             </OverviewItem>
           </Overview>
-          <Description>{info?.description}</Description>
+          <Description>{infoData?.description}</Description>
           <Overview>
             <OverviewItem>
               <span>TOTAL SUPPLY:</span>
-              <span>{price?.total_supply}</span>
+              <span>{tickersdata?.total_supply}</span>
             </OverviewItem>
             <Divide>
               <span>|</span>
@@ -216,7 +227,7 @@ function Coin() {
             </Divide>
             <OverviewItem>
               <span>MAX SUPPLY:</span>
-              <span>{price?.max_supply}</span>
+              <span>{tickersdata?.max_supply}</span>
             </OverviewItem>
           </Overview>
           <Taps>
