@@ -1,3 +1,5 @@
+import { start } from "repl";
+
 const BASE_URL = `https://api.coinpaprika.com/v1`;
 
 export function fetchCoins() {
@@ -14,4 +16,12 @@ export function fetchCoinTickers(coinId: string) {
   return fetch(`${BASE_URL}/tickers/${coinId}`).then((response) =>
     response.json()
   );
+}
+
+export function fetchCoinHistory(coinId: string) {
+  const endDate = Math.floor(Date.now() / 1000); // 초
+  const startDate = endDate - 60 * 60 * 24 * 7 * 2; // 60초 * 60분 * 24시간 * 7일, 일주일 전
+  return fetch(
+    `https://ohlcv-api.nomadcoders.workers.dev?coinId=${coinId}`
+  ).then((response) => response.json());
 }

@@ -6,7 +6,6 @@ import {
   useLocation,
   useRouteMatch,
 } from "react-router";
-import { useEffect, useState } from "react";
 import Price from "./Price";
 import Chart from "./Chart";
 import { Link } from "react-router-dom";
@@ -243,7 +242,7 @@ function Coin() {
               <Price />
             </Route>
             <Route path={`/:coinId/chart`}>
-              <Chart />
+              <Chart coinId={coinId} />
             </Route>
           </Switch>
         </>
@@ -263,4 +262,4 @@ export default Coin;
 // URL 변화 없이 react.js 의 State 만으로 구현할 수도 있었겠지만
 // 링크를 사용해서 URL 을 바꿈으로써 트리거가 되어서
 // re-render 를 할 수 있다는 게 정말 멋진 것 같아
-//
+// react=query is awesome, makes us NO LOADING but it can be get too many queries later
