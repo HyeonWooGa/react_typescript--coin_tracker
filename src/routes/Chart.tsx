@@ -42,6 +42,7 @@ function Chart({ coinId }: ChartProps) {
               height: 300,
               width: 500,
               toolbar: { show: false },
+              background: "transparent",
             },
             stroke: {
               curve: "smooth",
@@ -54,6 +55,23 @@ function Chart({ coinId }: ChartProps) {
               axisBorder: { show: false },
               axisTicks: { show: false },
               labels: { show: false },
+              type: "datetime",
+              categories: data?.map(
+                (data) =>
+                  `${new Date(data.time_close * 1000).getFullYear()}-${
+                    new Date(data.time_close * 1000).getMonth() + 1
+                  }-${new Date(data.time_close * 1000).getDate()}`
+              ),
+            },
+            fill: {
+              type: "gradient",
+              gradient: { gradientToColors: ["blue"], stops: [0, 100] },
+            },
+            colors: ["red"],
+            tooltip: {
+              y: {
+                formatter: (value) => `$${value.toFixed(3)}`,
+              },
             },
           }}
         />
