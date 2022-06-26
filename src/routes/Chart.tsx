@@ -1,6 +1,7 @@
 import { useQuery } from "react-query";
 import { fetchCoinHistory } from "../api";
 import ApexChart from "react-apexcharts";
+import Price from "./Price";
 
 interface ChartProps {
   coinId: string;
@@ -21,19 +22,18 @@ function Chart({ coinId }: ChartProps) {
   const { isLoading, data } = useQuery<IHistorical[]>(["ohlcv", coinId], () =>
     fetchCoinHistory(coinId)
   );
+  const priceOhlcv = data?.map((ohlcv) => ({
+    x: new Date(ohlcv.time_open * 1000),
+    y: [ohlcv.open, ohlcv.high, ohlcv.low, ohlcv.close],
+  }));
   return (
     <div>
       {isLoading ? (
         "Loading chart..."
       ) : (
         <ApexChart
-          type="line"
-          series={[
-            {
-              name: "Price",
-              data: data?.map((price) => Number(price.close)) as number[],
-            },
-          ]}
+          type="candlestick"
+          series={[{ name: Price, data: priceOhlcv }] as unknown as number[]}
           options={{
             theme: {
               mode: "dark",
@@ -44,24 +44,17 @@ function Chart({ coinId }: ChartProps) {
               toolbar: { show: false },
               background: "transparent",
             },
-            stroke: {
-              curve: "smooth",
-              width: 4,
-            },
             yaxis: {
-              show: false,
+              show: true,
+              labels: {
+                formatter: (value) => `$${value.toFixed(3)}`,
+              },
             },
             xaxis: {
               axisBorder: { show: false },
               axisTicks: { show: false },
-              labels: { show: false },
+              labels: { show: true },
               type: "datetime",
-              categories: data?.map(
-                (data) =>
-                  `${new Date(data.time_close * 1000).getFullYear()}-${
-                    new Date(data.time_close * 1000).getMonth() + 1
-                  }-${new Date(data.time_close * 1000).getDate()}`
-              ),
             },
             fill: {
               type: "gradient",
@@ -70,7 +63,7 @@ function Chart({ coinId }: ChartProps) {
             colors: ["red"],
             tooltip: {
               y: {
-                formatter: (value) => `$${value.toFixed(3)}`,
+                formatter: (value) => `${value.toFixed(3)} $`,
               },
             },
           }}

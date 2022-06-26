@@ -20,20 +20,23 @@ const Container = styled.div`
 const Header = styled.header`
   height: 15vh;
   display: flex;
-  justify-content: center;
+  justify-content: start;
   align-items: center;
 `;
 
 const Title = styled.h1`
   color: ${(props) => props.theme.accentColor};
   font-size: 48px;
+  position: absolute;
+  left: 50%;
+  transform: translate(-50%, 0);
 `;
 
 const Loader = styled.span`
   display: block;
 `;
 
-const Overview = styled.div`
+export const Overview = styled.div`
   margin-top: 30px;
   padding: 10px 20px;
   background-color: rgba(0, 0, 0, 0.5);
@@ -41,7 +44,7 @@ const Overview = styled.div`
   display: flex;
   justify-content: space-around;
 `;
-const OverviewItem = styled.div`
+export const OverviewItem = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -53,7 +56,7 @@ const OverviewItem = styled.div`
   }
 `;
 
-const Divide = styled.div`
+export const Divide = styled.div`
   display: flex;
   flex-direction: column;
   span {
@@ -84,6 +87,13 @@ const Tap = styled.span<{ isActive: boolean }>`
   a {
     display: block;
   }
+`;
+
+const BackBtn = styled(Tap)`
+  border-radius: 0px;
+  padding: 7px 7px;
+  background-color: transparent;
+  color: ${(props) => props.theme.textColor};
 `;
 
 interface RouteParams {
@@ -162,7 +172,7 @@ function Coin() {
     ["tickers", coinId], // key
     () => fetchCoinTickers(coinId), // fetcher 함수
     {
-      refetchInterval: 1000,
+      refetchInterval: 10000,
     } // option object
   );
   /* const [loading, setLoading] = useState(true);
@@ -190,6 +200,9 @@ function Coin() {
         </title>
       </Helmet>
       <Header>
+        <BackBtn isActive={false}>
+          <Link to={"/"}>Back</Link>
+        </BackBtn>
         <Title>
           {state?.name ? state.name : loading ? "Loading..." : infoData?.name}
         </Title>
@@ -210,7 +223,7 @@ function Coin() {
             </Divide>
             <OverviewItem>
               <span>SYMBOL:</span>
-              <span>${infoData?.symbol}</span>
+              <span>{infoData?.symbol}</span>
             </OverviewItem>
             <Divide>
               <span>|</span>
@@ -219,7 +232,7 @@ function Coin() {
             </Divide>
             <OverviewItem>
               <span>Price:</span>
-              <span>{tickersdata?.quotes.USD.price.toFixed(3)}</span>
+              <span>${tickersdata?.quotes.USD.price.toFixed(3)}</span>
             </OverviewItem>
           </Overview>
           <Description>{infoData?.description}</Description>
@@ -248,7 +261,7 @@ function Coin() {
           </Taps>
           <Switch>
             <Route path={`/:coinId/price`}>
-              <Price />
+              <Price coinId={coinId} />
             </Route>
             <Route path={`/:coinId/chart`}>
               <Chart coinId={coinId} />
